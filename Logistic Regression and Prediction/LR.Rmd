@@ -1,0 +1,267 @@
+---
+title: "LR Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+#Logistic Regression
+
+```{r}
+library(tidyverse)
+library(healthds)
+library(pROC)
+```
+# 1.2 Practice Quiz
+
+```{r}
+
+BPUrban1000 =
+  BPUrban1000 %>%
+  mutate(hyperten = factor(ifelse(BPUrban1000$hypertension == 1, 'hyper.true', 'hyper.false'),
+                           levels = c('hyper.true', 'hyper.false')),
+         chew = factor(ifelse(BPUrban1000$chewing == TRUE, 'chew.true', 'chew.false'),
+                       levels = c('chew.true', 'chew.false')))
+tab = table(BPUrban1000$chew, BPUrban1000$hyperten)
+addmargins(tab)
+
+
+```
+
+
+```{r}
+
+# Assuming BPUrban1000 is already loaded and processed as per your previous code
+
+# Calculate total number of observations
+total_count <- nrow(BPUrban1000)
+
+# Calculate number of people with hypertension
+hypertension_count <- sum(BPUrban1000$hyperten == 'hyper.true')
+
+# Calculate proportion of people with hypertension
+proportion_hypertension <- hypertension_count / total_count
+
+# Print the proportion
+proportion_hypertension
+
+
+```
+
+
+```{r}
+# Assuming BPUrban1000 is already loaded and processed as per your previous code
+
+# Create a subset of data where chew == 'chew.true'
+chew_true_data <- BPUrban1000[BPUrban1000$chew == 'chew.true', ]
+
+# Calculate total number of people who chew tobacco
+total_chew_true <- nrow(chew_true_data)
+
+# Calculate number of people who chew tobacco and have hypertension
+hypertension_chew_true <- sum(chew_true_data$hyperten == 'hyper.true')
+
+# Calculate proportion of people who chew tobacco and have hypertension
+proportion_hypertension_chew_true <- hypertension_chew_true / total_chew_true
+
+# Print the proportion
+proportion_hypertension_chew_true
+
+```
+
+
+```{r}
+# Assuming BPUrban1000 is already loaded and processed as per your previous code
+
+# Create a subset of data where chew == 'chew.false'
+chew_false_data <- BPUrban1000[BPUrban1000$chew == 'chew.false', ]
+
+# Calculate total number of people who do not chew tobacco
+total_chew_false <- nrow(chew_false_data)
+
+# Calculate number of people who do not chew tobacco and have hypertension
+hypertension_chew_false <- sum(chew_false_data$hyperten == 'hyper.true')
+
+# Calculate proportion of people who do not chew tobacco and have hypertension
+proportion_hypertension_chew_false <- hypertension_chew_false / total_chew_false
+
+# Print the proportion
+proportion_hypertension_chew_false
+
+
+
+```
+
+
+```{r}
+# Assuming BPUrban1000 is already loaded and processed as per your previous code
+# Assuming 'tab' is the contingency table you created earlier
+
+# Perform two-proportion z-test
+test_result <- prop.test(tab)
+
+# Print the test result
+test_result
+
+```
+
+```{r}
+# Assuming BPUrban1000 is already loaded and processed as per your previous code
+
+# Create a contingency table
+tab <- table(BPUrban1000$chew, BPUrban1000$hyperten)
+
+# Calculate proportions
+prop_chew_true <- tab['chew.true', 'hyper.true'] / sum(tab['chew.true', ])
+prop_chew_false <- tab['chew.false', 'hyper.true'] / sum(tab['chew.false', ])
+
+# Calculate the difference in proportions
+difference_in_proportions <- prop_chew_true - prop_chew_false
+
+# Print the results
+cat("Proportion of hypertension among users of chewing tobacco (chew.true):", prop_chew_true, "\n")
+cat("Proportion of hypertension among non-users of chewing tobacco (chew.false):", prop_chew_false, "\n")
+cat("Difference in proportion of hypertension between chew.true and chew.false:", difference_in_proportions, "\n")
+
+```
+```{r}
+# Assuming BPUrban1000 is already loaded and processed as per your previous code
+
+# Perform Fisher's exact test
+fisher_result <- fisher.test(table(BPUrban1000$chew, BPUrban1000$hyperten))
+
+# Print the Fisher's exact test result
+fisher_result
+
+# Extract odds ratio from the test result
+odds_ratio <- fisher_result$estimate
+
+# Print the odds ratio
+cat("Odds ratio of hypertension in those who chew tobacco versus those who do not:", odds_ratio, "\n")
+
+```
+
+# 2.1 Practice Quiz
+
+```{r}
+library(healthds)
+library(dplyr)
+
+data("BPUrban1000")
+
+BPUrban1000 =
+  BPUrban1000 %>%
+  mutate(
+parent_history_HTN = factor(parent_history_HTN, c('none', 'either', 'both')))
+
+mod = glm(formula = hypertension ~ parent_history_HTN, family = binomial(link = "logit"), 
+          data = BPUrban1000)
+summary(mod)
+
+```
+
+```{r}
+library(tidyverse)
+library(healthds)
+m = glm(hypertension ~ parent_history_HTN,
+        family = binomial(link = 'logit'),
+        data = BPUrban1000)
+s = summary(m)
+cbind(Estimate = s$coefficients[, 'Estimate'] %>% exp(),
+      confint(m) %>% exp())
+
+```
+
+# 2.2 Practice Quiz
+
+```{r}
+glm(formula = hypertension ~ parent_history_HTN + age, family = binomial(link = "logit"), 
+    data = BPUrban1000)
+```
+```{r}
+# Assigning values
+age <- 37
+parent_history_HTNeither <- 1  # No parental history of hypertension
+
+# Coefficients from the model
+intercept <- -6.757208
+coef_age <- 0.092159
+coef_parent_HTN <- 0.212740
+
+# Calculating predicted log-odds
+predicted_log_odds <- intercept + coef_age * age + coef_parent_HTN * parent_history_HTNeither
+predicted_log_odds
+
+```
+
+```{r}
+BPUrban1000 %>%
+  mutate(pred_htn_prob = glm(hypertension ~ parent_history_HTN + age,
+                             family = "binomial",
+                             data = .) %>%
+                          predict(type = "response")) %>%
+  ggplot() +
+  geom_point(aes(x = age,
+                 y = pred_htn_prob,
+                 color = factor(hypertension)))
+```
+```{r}
+BPUrban1000 %>%
+  mutate(pred_htn_prob = glm(hypertension ~ parent_history_HTN + age,
+                             family = "binomial",
+                             data = .) %>%
+                          predict(type = "response")) %>%
+  ggplot() +
+  geom_point(aes(x = age,
+                 y = pred_htn_prob,
+                 color = factor(hypertension)))
+```
+
+# 3.3 Practice Quiz
+
+```{r}
+htn_model = glm(hypertension ~ age + religion + gender + smoking + chewing,
+                family = "binomial",
+                data = BPUrban1000)
+
+BPUrban1000 %>%
+  mutate(pred_htn_prob = predict(htn_model, newdata = ., type = "response")) %>%
+  roc(hypertension, pred_htn_prob, plot = TRUE)
+```
+```{r}
+htn_model = glm(hypertension ~ age + religion + gender + smoking + chewing,
+                family = "binomial",
+                data = BPUrban1000)
+
+BPUrban1000 %>%
+  mutate(pred_htn_prob = predict(htn_model, newdata = ., type = "response")) %>%
+  summarize(brier = mean((hypertension - pred_htn_prob)^2),
+            brier_max = mean(pred_htn_prob) * (1 - mean(pred_htn_prob))) %>%
+  mutate(scaled_brier = 1 - brier / brier_max)
+
+```
+```{r}
+htn_model = glm(hypertension ~ age + religion + gender + smoking + chewing,
+                family = "binomial",
+                data = BPUrban1000)
+
+BPUrban1000 %>%
+  mutate(pred_htn_prob = predict(htn_model, newdata = ., type = "response")) %>%
+  mutate(pred_htn_prob_cat = cut_number(pred_htn_prob, 10)) %>%
+  group_by(pred_htn_prob_cat) %>%
+  summarize(pred_htn_prob = mean(pred_htn_prob),
+            obs_htn = mean(hypertension)) %>%
+  ggplot() +
+  geom_point(aes(x = pred_htn_prob, y = obs_htn)) +
+  geom_abline(intercept = 0, slope = 1)
+
+```
+
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.

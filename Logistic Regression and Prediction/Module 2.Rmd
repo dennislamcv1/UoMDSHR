@@ -1,0 +1,152 @@
+---
+title: "Module 2 Quiz"
+output: html_document
+date: "2024-06-20"
+---
+
+```{r}
+library(healthds)
+library(dplyr)
+library(readr)
+
+data <- read_csv("BPUrban1000.csv", show_col_types = "FALSE")
+
+```
+
+
+```{r}
+colnames(BPUrban1000)
+```
+
+```{r}
+str(BPUrban1000)
+```
+```{r}
+# Fit a logistic regression model for hypertension and smoking
+model_smoking <- glm(hypertension ~ smoking, data = data, family = binomial)
+```
+
+
+```{r}
+# Fit a logistic regression model for hypertension and chewing tobacco
+model_chewing <- glm(hypertension ~ chewing, data = data, family = binomial)
+```
+
+```{r}
+# Summarize the results for smoking
+summary(model_smoking)
+```
+```{r}
+# Summarize the results for chewing tobacco
+summary(model_chewing)
+```
+```{r}
+# Fit the logistic regression model with multiple predictors
+model <- glm(hypertension ~ smoking + age + religion + gender + chewing, data = data, family = binomial)
+
+# Display the summary of the model
+summary(model)
+
+# Calculate the 95% confidence interval for the smoking coefficient
+confint(model, parm = "smokingTRUE", level = 0.95)
+```
+```{r}
+# Extract the model coefficients
+coefficients <- coef(model)
+```
+
+
+```{r}
+# Define the individual's characteristics
+age <- 40
+religion <- "Muslim"  # Assuming religion is a factor variable
+gender <- "Male"      # Assuming gender is a factor variable
+smoking <- TRUE
+chewing <- FALSE
+```
+
+
+```{r}
+# Calculate the linear predictor (log-odds)
+log_odds <- coefficients["(Intercept)"] + 
+            coefficients["age"] * age + 
+            coefficients[paste("religion", religion, sep = "")] + 
+            coefficients[paste("gender", gender, sep = "")] + 
+            coefficients["smokingTRUE"] * smoking + 
+            coefficients["chewingTRUE"] * chewing
+
+# Convert the log-odds to odds
+odds <- exp(log_odds)
+
+# Print the predicted odds
+odds
+```
+```{r}
+# Define the individual's characteristics
+age <- 40
+religion <- "Muslim"  # Adjust if necessary
+gender <- "Male"      # Adjust if necessary
+smoking <- TRUE
+chewing <- TRUE
+```
+
+
+```{r}
+# Calculate the linear predictor (log-odds)
+log_odds <- coefficients["(Intercept)"] + 
+            coefficients["age"] * age + 
+            coefficients[paste("religion", religion, sep = "")] + 
+            coefficients[paste("gender", gender, sep = "")] + 
+            coefficients["smokingTRUE"] * smoking + 
+            coefficients["chewingTRUE"] * chewing
+
+# Convert the log-odds to odds
+odds <- exp(log_odds)
+
+# Print the predicted odds
+odds
+```
+
+```{r}
+# Define the individual's characteristics
+age <- 40
+religion <- "Muslim"  # Adjust if necessary
+gender <- "Male"      # Adjust if necessary
+smoking <- TRUE
+chewing <- TRUE
+```
+
+```{r}
+# Calculate the linear predictor (log-odds)
+log_odds <- coefficients["(Intercept)"] + 
+            coefficients["age"] * age + 
+            coefficients[paste("religion", religion, sep = "")] + 
+            coefficients[paste("gender", gender, sep = "")] + 
+            coefficients["smokingTRUE"] * smoking + 
+            coefficients["chewingTRUE"] * chewing
+
+# Convert the log-odds to probability
+probability <- exp(log_odds) / (1 + exp(log_odds))
+
+# Print the predicted probability
+probability
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
