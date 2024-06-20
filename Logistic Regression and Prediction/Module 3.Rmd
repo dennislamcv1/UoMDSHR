@@ -1,0 +1,111 @@
+---
+title: "Module 3 Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(healthds)
+library(pROC)
+library(readr)
+library(conflicted)
+
+```
+
+
+# Use the code provided below to find AUC/ROC for the model that we produced to predict hypertension as a function of smoking, chewing tobacco use, age, religion, and gender.
+
+```{r}
+# Load the dataset
+data <- read_csv("BPUrban1000.csv")
+```
+```{r}
+# Fit the logistic regression model with multiple predictors
+model <- glm(hypertension ~ smoking + age + religion + gender + chewing, data = data, family = binomial)
+```
+
+```{r}
+# Summarize the results for all
+summary(model)
+```
+```{r}
+# Predict probabilities of hypertension
+predicted_probabilities <- predict(model, type = "response")
+```
+
+```{r}
+# Calculate the ROC curve
+roc_curve <- roc(data$hypertension, predicted_probabilities)
+
+# Calculate the AUC
+auc_value <- auc(roc_curve)
+
+```
+
+```{r}
+# Print the AUC value
+print(auc_value)
+
+# Plot the ROC curve
+plot(roc_curve, main = "ROC Curve for Hypertension Prediction Model", col = "blue", lwd = 2)
+```
+
+
+
+
+
+
+
+
+# In the practice quiz for this module, we found the AUC/ROC for the logistic regression model used to explain hypertension versus smoking, chewing, age, religion, and gender. Based on the coefficient p-values from the coefficient table, remove predictors of hypertension that are not statistically significant based upon a significance threshold of 0.05 and recalculate AUC for the new (reduced) model.
+
+```{r}
+# Fit the reduced logistic regression model with significant predictors
+reduced_model <- glm(hypertension ~ smoking + age + chewing, data = data, family = binomial)
+
+# Predict probabilities of hypertension using the reduced model
+reduced_predicted_probabilities <- predict(reduced_model, type = "response")
+
+# Calculate the ROC curve for the reduced model
+reduced_roc_curve <- roc(data$hypertension, reduced_predicted_probabilities)
+
+# Calculate the AUC for the reduced model
+reduced_auc_value <- auc(reduced_roc_curve)
+
+# Print the AUC value for the reduced model
+print(reduced_auc_value)
+
+# Plot the ROC curve for the reduced model
+plot(reduced_roc_curve, main = "ROC Curve for Reduced Hypertension Prediction Model", col = "blue", lwd = 2)
+```
+
+```{r}
+# Fit the reduced logistic regression model with significant predictors
+reduced_model <- glm(hypertension ~ smoking + age + chewing, data = data, family = binomial)
+
+# Predict probabilities of hypertension using the reduced model
+reduced_predicted_probabilities <- predict(reduced_model, type = "response")
+
+# Calculate the Brier score
+actual_outcomes <- data$hypertension
+brier_score <- mean((reduced_predicted_probabilities - actual_outcomes)^2)
+
+# Print the Brier score
+print(brier_score)
+```
+```{r}
+# Calculate the Brier score for the reduced model
+actual_outcomes <- data$hypertension
+brier_score_model <- mean((reduced_predicted_probabilities - actual_outcomes)^2)
+
+# Calculate the Brier score for the baseline model (prevalence model)
+baseline_probability <- mean(actual_outcomes)
+brier_score_baseline <- mean((baseline_probability - actual_outcomes)^2)
+
+# Calculate the scaled Brier score
+scaled_brier_score <- 1 - (brier_score_model / brier_score_baseline)
+
+# Print the scaled Brier score
+print(scaled_brier_score)
+```
+
