@@ -52,3 +52,5 @@ indicator_table <-
   mutate(account = round(account),
          gap_female = round(gap_female),
          gap_inc = round(gap_inc))
+
+write.csv(indicator_table, "indicatortable.csv" , row.names = FALSE)
